@@ -1,6 +1,5 @@
-import CV
 from django import forms
-from .models import Contact
+from .models import CV
 
 class CVForm(forms.ModelForm):
     class Meta:

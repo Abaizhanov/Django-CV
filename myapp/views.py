@@ -1,11 +1,9 @@
-from django.shortcuts import render, redirect
-from .forms import CVForm
+from django.shortcuts import render, redirect, get_object_or_404
 from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.conf import settings
+from .forms import CVForm
 from .models import CV
-
 
 def create_cv(request):
     if request.method == "POST":
@@ -15,8 +13,11 @@ def create_cv(request):
             return redirect('cv_list')
     else:
         form = CVForm()
-
     return render(request, 'cv_form.html', {'form': form})
+
+def cv_list(request):
+    cvs = CV.objects.all()
+    return render(request, 'cv_list.html', {'cvs': cvs})
 
 def share_cv_email(request, cv_id):
     cv = get_object_or_404(CV, id=cv_id)
@@ -25,13 +26,11 @@ def share_cv_email(request, cv_id):
     if recipient_email:
         subject = f"{cv.name}'s CV"
         message = f"Check out {cv.name}'s CV at {request.build_absolute_uri(cv.profile_picture.url)}"
-        send_mail(subject, message, settings.EMAIL_HOST_USER, [recipient_email])
+        sender_email = settings.EMAIL_HOST_USER
+
+        send_mail(subject, message, sender_email, [recipient_email])
         messages.success(request, "CV shared successfully via email.")
     else:
         messages.error(request, "Please provide a valid email.")
 
     return redirect('cv_list')
-
-
-def contact_view(request):
-    return None
